@@ -10,8 +10,6 @@
 7. [Usage](#usage)
 8. [Challenges & Learnings](#challenges--learnings)
 9. [Future Enhancements](#future-enhancements)
-10. [Contributors](#contributors)
-11. [License](#license) (Optional)
 
 ## Introduction
 
