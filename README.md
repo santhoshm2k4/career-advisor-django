@@ -68,42 +68,42 @@ The Career Advisor is a full-stack web application designed to assist users in m
     *   *Encoding:* LabelEncoder
 
 ## Project Structure
-career_advisor/
-├── career_advisor/ # Django project configuration directory
-│ ├── init.py
-│ ├── asgi.py
-│ ├── settings.py # Project settings
-│ ├── urls.py # Project-level URL routing
-│ └── wsgi.py
-├── ml_models/ # Directory for saved ML models and artifacts
-│ ├── ml_models_degree/
-│ │ ├── rf_degree_model.joblib
-│ │ └── ... (other degree artifacts)
-│ └── ml_models_job_9k/
-│ ├── rf_model_job_9k.joblib
-│ └── ... (other job artifacts)
-├── predictor/ # Main Django application
-│ ├── init.py
-│ ├── admin.py # Admin site configurations
-│ ├── apps.py # App configuration (signals imported here)
-│ ├── forms.py # Django forms for input and validation
-│ ├── migrations/
-│ ├── models.py # Database models (User Profile, Prediction History)
-│ ├── urls.py # App-level URL routing
-│ ├── views.py # View logic, prediction handling
-│ └── ...
-├── templates/ # Project-level templates
-│ ├── predictor/ # Templates for the 'predictor' app (base, dashboard, etc.)
-│ │ ├── base.html
-│ │ └── ...
-│ └── registration/ # Templates for authentication (login, register, etc.)
-│ ├── login.html
-│ └── ...
-├── db.sqlite3 # SQLite database file (should be in .gitignore)
-├── manage.py # Django's command-line utility
-├── README.md # This file
-├── requirements.txt # Python package dependencies
-└── .gitignore # Specifies intentionally untracked files
+**career_advisor/
+**├── career_advisor/ # Django project configuration directory
+**│ ├── init.py
+**│ ├── asgi.py
+**│ ├── settings.py # Project settings
+**│ ├── urls.py # Project-level URL routing
+**│ └── wsgi.py
+**├── ml_models/ # Directory for saved ML models and artifacts
+**│ ├── ml_models_degree/
+**│ │ ├── rf_degree_model.joblib
+**│ │ └── ... (other degree artifacts)
+**│ └── ml_models_job_9k/
+**│ ├── rf_model_job_9k.joblib
+**│ └── ... (other job artifacts)
+**├── predictor/ # Main Django application
+**│ ├── init.py
+**│ ├── admin.py # Admin site configurations
+**│ ├── apps.py # App configuration (signals imported here)
+**│ ├── forms.py # Django forms for input and validation
+**│ ├── migrations/
+**│ ├── models.py # Database models (User Profile, Prediction History)
+**│ ├── urls.py # App-level URL routing
+**│ ├── views.py # View logic, prediction handling
+**│ └── ...
+**├── templates/ # Project-level templates
+**│ ├── predictor/ # Templates for the 'predictor' app (base, dashboard, etc.)
+**│ │ ├── base.html
+**│ │ └── ...
+**│ └── registration/ # Templates for authentication (login, register, etc.)
+**│ ├── login.html
+**│ └── ...
+**├── db.sqlite3 # SQLite database file (should be in .gitignore)
+**├── manage.py # Django's command-line utility
+**├── README.md # This file
+**├── requirements.txt # Python package dependencies
+**└── .gitignore # Specifies intentionally untracked files
 
 
 ## Setup and Installation
@@ -174,16 +174,3 @@ career_advisor/
 *   **Model Iteration:** Explore different ML models, feature engineering, and potentially incorporate user feedback to refine predictions.
 *   **Admin Interface Enhancements:** Customize the Django admin for better management of user data and prediction records.
 *   **API Development:** Potentially expose prediction functionality via an API for other applications.
-
-## Contributors
-
-*   [Your Name/Team Member 1 Name] - [Briefly state main contribution area, e.g., ML Model Development, Backend Logic]
-*   [Team Member 2 Name] - [e.g., Django Backend, Database Design]
-*   [Team Member 3 Name] - [e.g., Frontend UI/UX, Bootstrap Integration]
-*   [Team Member 4 Name] - [e.g., User Authentication, Profile Management]
-*   [Team Member 5 Name] - [e.g., Integration, Testing, Documentation]
-    *(Adjust according to your actual team roles)*
-
-## License (Optional)
-
-This project is licensed under the [NAME OF LICENSE, e.g., MIT License] - see the `LICENSE.md` file for details (if you add one).
