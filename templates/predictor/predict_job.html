@@ -1,0 +1,166 @@
+{# predictor/templates/predictor/predict_job.html #}
+{% extends "predictor/base.html" %}
+{% load static %}
+{% load predictor_extras %}
+
+{% block title %}Job Role Prediction{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* --- Keep Base Styles --- */
+    .form-section { background-color: #ffffff; padding: 30px 35px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); margin-bottom: 40px; border: 1px solid #e9ecef; }
+    .section-description { color: #6c757d; margin-bottom: 25px; font-size: 0.95rem; }
+    .prediction-card { margin-top: 25px; padding: 18px 25px; border-left-width: 6px; border-radius: 8px; display: flex; align-items: center; font-size: 1.05rem; box-shadow: 0 3px 8px rgba(0,0,0,0.05); }
+    .prediction-card strong { margin-left: 15px; font-weight: 600; }
+    .prediction-card i { font-size: 1.6em; opacity: 0.8; }
+    .alert-success { border-left-color: #198754; background-color: #d1e7dd; color: #0f5132; }
+    .alert-success i { color: #198754; }
+    .alert-danger { border-left-color: #dc3545; background-color: #f8d7da; color: #842029; }
+    .alert-danger i { color: #dc3545; }
+    .btn-custom { padding: 0.7rem 1.8rem; font-weight: 600; border-radius: 8px; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.8px; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-custom:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); }
+    .btn-predict-job { background-color: #0d6efd; border-color: #0d6efd; color: #fff; }
+    .btn-predict-job:hover { background-color: #0a58ca; border-color: #0a53be; color: #fff; }
+    .invalid-feedback { display: block; width: 100%; margin-top: .25rem; font-size: .875em; color: #dc3545;}
+
+    /* --- Re-add Styles for Skill Levels (from degree page) --- */
+    .skill-block {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #eee;
+    }
+    .skill-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .skill-label { font-weight: 600; color: #495057; margin-bottom: 0.8rem; font-size: 0.95rem; display: block; }
+    .skill-levels-container { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .level-card {
+        padding: 6px 12px; border: 1px solid #dce0e4; border-radius: 20px; background-color: #f8f9fa;
+        cursor: pointer; transition: all 0.2s ease-in-out; font-weight: 500; color: #495057;
+        font-size: 0.85rem; user-select: none; flex-grow: 1; text-align: center; min-width: 100px;
+        /* Add position relative if needed for pseudo-elements later */
+    }
+    .level-card:hover { border-color: #adb5bd; background-color: #e9ecef; }
+    .level-card.selected { background-color: #0d6efd; border-color: #0d6efd; color: #fff; font-weight: 600; }
+    /* Style to hide the actual radio button */
+    .level-radio { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
+    /* --- End Skill Level Styles --- */
+
+</style>
+{% endblock %}
+
+
+{% block content %}
+    <h1 class="main-title"><i class="fas fa-briefcase"></i> Job Role Prediction</h1>
+
+    {# --- Display Result OR Form --- #}
+    {% if job_prediction_result %}
+        {# --- Show Result Area (No change) --- #}
+         <div class="text-center">
+             <div class="alert {% if 'Error' in job_prediction_result %}alert-danger{% else %}alert-success{% endif %} prediction-card d-inline-block" role="alert" style="min-width: 300px;">
+                 <i class="fas {% if 'Error' in job_prediction_result %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} fa-fw"></i>
+                 <strong>Suggestion:</strong> {{ job_prediction_result }}
+             </div>
+             <div class="mt-4">
+                  <a href="{% url 'predictor:predict_job' %}" class="btn btn-secondary btn-custom">
+                      <i class="fas fa-redo"></i> Predict Again
+                  </a>
+             </div>
+         </div>
+    {% else %}
+        {# --- Show Form Area (MODIFIED) --- #}
+        <section class="form-section">
+            <p class="section-description text-center">Select your proficiency level for each skill.</p>
+            <form method="post" id="job-prediction-form">
+                {% csrf_token %}
+
+                {# Display Non-Field Errors #}
+                 {% if form.non_field_errors %}
+                     <div class="alert alert-danger" role="alert">
+                         {% for error in form.non_field_errors %} {{ error }} {% endfor %}
+                     </div>
+                 {% endif %}
+
+                {# Single column layout #}
+                <div class="row justify-content-center">
+                    <div class="col-lg-10 col-xl-9"> {# Adjusted width #}
+
+                        {# Loop through form fields (which are ChoiceFields using RadioSelect) #}
+                        {% for field in form %}
+                        <div class="skill-block">
+                            {# Use the field's label #}
+                            <label class="skill-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+
+                            {# Container for the radio button options #}
+                            <div class="skill-levels-container" data-feature-group="{{ field.name|slugify }}">
+                                {# Loop through the choices within the RadioSelect field #}
+                                {% for radio in field %}
+                                <label class="level-card {% if radio.data.selected %}selected{% endif %}" for="{{ radio.id_for_label }}">
+                                    {{ radio.choice_label }} {# Display e.g., "Average" #}
+                                    {{ radio.tag }} {# Render the actual <input type="radio"> tag #}
+                                </label>
+                                {% endfor %}
+                            </div> {# End skill-levels-container #}
+
+                            {# Display field specific errors #}
+                            {% if field.errors %}
+                                <div class="invalid-feedback d-block"> {# Ensure errors are visible #}
+                                    {{ field.errors|striptags }}
+                                </div>
+                            {% endif %}
+
+                        </div> {# End skill-block #}
+                        {% endfor %}
+
+                    </div> {# End column control #}
+                </div> {# End row #}
+
+                <div class="text-center mt-4 pt-3">
+                    <button type="submit" name="predict_job" value="predict_job" class="btn btn-custom btn-predict-job"><i class="fas fa-magic"></i> Predict Job Role</button>
+                </div>
+            </form>
+        </section>
+    {% endif %} {# End conditional display #}
+
+{% endblock %}
+
+
+{# Add JavaScript Block #}
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all the containers for skill levels
+        const containers = document.querySelectorAll('.skill-levels-container');
+
+        containers.forEach(container => {
+            const levelCards = container.querySelectorAll('.level-card');
+
+            levelCards.forEach(card => {
+                // Add click listener to the card (label)
+                card.addEventListener('click', function(event) {
+                    // Find the radio button inside this card
+                    const radioInput = card.querySelector('.level-radio');
+
+                    if (radioInput) {
+                        // De-select all sibling cards visually
+                        const siblingCards = container.querySelectorAll('.level-card');
+                        siblingCards.forEach(sibling => {
+                            sibling.classList.remove('selected');
+                        });
+
+                        // Select the clicked card visually
+                        card.classList.add('selected');
+
+                        // Ensure the underlying radio button is checked (browser often does this via label click)
+                        radioInput.checked = true;
+                    }
+                });
+
+                // Set initial visual state based on pre-selected radio (if any)
+                const radioInput = card.querySelector('.level-radio');
+                 if (radioInput && radioInput.checked) {
+                     card.classList.add('selected');
+                 }
+            });
+        });
+    });
+</script>
+{% endblock %}

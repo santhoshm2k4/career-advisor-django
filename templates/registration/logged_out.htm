@@ -1,0 +1,19 @@
+{# templates/registration/logged_out.html #}
+{% extends "predictor/base.html" %} {# Assume base.html later, or remove this line for now #}
+
+{% block title %}Logged Out{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <div class="card mt-5 p-4">
+            <h2 class="card-title">Logged Out</h2>
+            <p class="lead">You have been successfully logged out.</p>
+            <p>
+                <a href="{% url 'login' %}" class="btn btn-primary">Login Again</a>
+                <a href="{% url 'predictor:index' %}" class="btn btn-secondary">Go to Homepage</a> {# Assumes index is in predictor app #}
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

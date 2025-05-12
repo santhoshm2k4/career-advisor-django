@@ -1,0 +1,84 @@
+{# predictor/templates/predictor/profile.html #}
+{% extends "predictor/base.html" %}
+
+{% block title %}Your Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Add styles if needed for profile display/form */
+    .profile-details dt { font-weight: 600; }
+    .profile-details dd { margin-bottom: 0.8rem; }
+    /* Style form elements like other forms */
+    #id_full_name {
+        display: block; width: 100%; padding: .375rem .75rem; font-size: 1rem;
+        font-weight: 400; line-height: 1.5; color: #212529; background-color: #fff;
+        background-clip: padding-box; border: 1px solid #ced4da; appearance: none;
+        border-radius: .375rem; transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    }
+    #id_full_name:focus {
+        color: #212529; background-color: #fff; border-color: #86b7fe; outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+    }
+    label[for='id_full_name']{ display: inline-block; margin-bottom: .5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="main-title"><i class="fas fa-user-circle"></i> Your Profile</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Profile Details</div>
+            <div class="card-body profile-details">
+            <dl class="row mb-0">
+                    <dt class="col-sm-4">Username:</dt>
+                    <dd class="col-sm-8">{{ request.user.username }}</dd>
+
+                    <dt class="col-sm-4">Email:</dt>
+                    <dd class="col-sm-8">{{ request.user.email|default:"(Not provided)" }}</dd>
+
+                    <dt class="col-sm-4">Full Name:</dt>
+                    {# Access full_name via profile related name #}
+                    <dd class="col-sm-8">{{ request.user.profile.full_name|default:"(Not set)" }}</dd>
+
+                    <dt class="col-sm-4">Joined:</dt>
+                    <dd class="col-sm-8">{{ request.user.date_joined|date:"F j, Y" }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Update Profile</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {# Render form fields using Bootstrap structure #}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            {{ field.label_tag }}
+                            {{ field }} {# Render the widget #}
+                            {% if field.errors %}
+                                <div class="text-danger mt-1" style="font-size: 0.85em;">
+                                    {{ field.errors|striptags }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    {# Display non-field errors #}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {% for error in form.non_field_errors %} {{ error }} {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+{# predictor/templates/predictor/dashboard.html #}
+{% extends "predictor/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h1 class="main-title mt-4">Welcome, {{ user.username }}!</h1>
+    <p class="lead mb-5">What would you like to do today?</p>
+
+    <div class="row justify-content-center g-4"> {# g-4 adds gap between columns #}
+        <div class="col-md-5">
+            <div class="card h-100 shadow-sm"> {# h-100 makes cards same height #}
+                <div class="card-body text-center d-flex flex-column justify-content-center align-items-center"> {# Center content #}
+                    <i class="fas fa-briefcase fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Job Role Prediction</h5>
+                    <p class="card-text">Get a job role suggestion based on your skills.</p>
+                    <a href="{% url 'predictor:predict_job' %}" class="btn btn-primary mt-auto">Predict Job Role</a> {# mt-auto pushes button down #}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
+                    <i class="fas fa-graduation-cap fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Degree Suggestion</h5>
+                    <p class="card-text">Find potential degree programs based on your interests.</p>
+                    <a href="{% url 'predictor:predict_degree' %}" class="btn btn-success mt-auto">Predict Degree</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5"> {# History Card #}
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
+                    <i class="fas fa-history fa-3x text-info mb-3"></i>
+                    <h5 class="card-title">View History</h5>
+                    <p class="card-text">Review your past prediction results.</p>
+                    {# Update this link #}
+                    <a href="{% url 'predictor:history' %}" class="btn btn-info mt-auto">View Prediction History</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

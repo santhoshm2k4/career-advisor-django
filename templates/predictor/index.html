@@ -1,0 +1,107 @@
+{# predictor/templates/predictor/index.html #}
+{% extends "predictor/base.html" %} {# Inherit from the base template #}
+{% load static %}
+{% load predictor_extras %}
+
+{% block title %}Home - Career Advisor{% endblock %} {# Set specific title #}
+
+{% block extra_css %}
+{# Styles specific to index.html (forms, grids, etc.) #}
+<style>
+    .form-section { background-color: #ffffff; padding: 30px 35px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); margin-bottom: 40px; border: 1px solid #e9ecef; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .section-title { font-weight: 600; color: #343a40; margin-bottom: 10px; display: flex; align-items: center; }
+    .section-title i { margin-right: 10px; color: #0d6efd; font-size: 1.5rem; }
+    .section-description { color: #6c757d; margin-bottom: 25px; font-size: 0.95rem; }
+    .form-label { font-weight: 500; color: #495057; margin-bottom: 0.6rem; font-size: 0.9rem; }
+    .form-control, .form-select { border-radius: 6px; border-color: #ced4da; padding: 0.6rem 1rem; font-size: 0.95rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+    .form-control:focus, .form-select:focus { border-color: #86b7fe; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); }
+    .form-control::placeholder { color: #adb5bd; font-size: 0.9rem; }
+    .feature-group { margin-bottom: 1.5rem; }
+    .interest-title { font-weight: 600; color: #343a40; margin-bottom: 1rem; }
+    .interest-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .form-check { background-color: #f8f9fa; padding: 12px 18px 12px 2.8em; border-radius: 8px; transition: all 0.2s ease-in-out; border: 1px solid #e9ecef; position: relative; cursor: pointer; }
+    .form-check:hover { background-color: #e9ecef; border-color: #dee2e6; }
+    .form-check-input { width: 1.3em; height: 1.3em; margin-top: 0; position: absolute; left: 1em; top: 50%; transform: translateY(-50%); cursor: pointer; }
+    .form-check-input:checked { background-color: #0d6efd; border-color: #0d6efd; }
+    .form-check-input:focus { box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); }
+    .form-check-label { font-weight: 400; color: #495057; cursor: pointer; }
+    .btn-custom { padding: 0.7rem 1.8rem; font-weight: 600; border-radius: 8px; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.8px; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-custom:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); }
+    .btn-predict-job { background-color: #0d6efd; border-color: #0d6efd; color: #fff; }
+    .btn-predict-job:hover { background-color: #0a58ca; border-color: #0a53be; color: #fff; }
+    .btn-predict-degree { background-color: #198754; border-color: #198754; color: #fff; }
+    .btn-predict-degree:hover { background-color: #157347; border-color: #146c43; color: #fff; }
+    .prediction-card { margin-top: 25px; padding: 18px 25px; border-left-width: 6px; border-radius: 8px; display: flex; align-items: center; font-size: 1.05rem; box-shadow: 0 3px 8px rgba(0,0,0,0.05); }
+    .prediction-card strong { margin-left: 15px; font-weight: 600; }
+    .prediction-card i { font-size: 1.6em; opacity: 0.8; }
+    .alert-success { border-left-color: #198754; background-color: #d1e7dd; color: #0f5132; }
+    .alert-success i { color: #198754; }
+    .alert-danger { border-left-color: #dc3545; background-color: #f8d7da; color: #842029; }
+    .alert-danger i { color: #dc3545; }
+</style>
+{% endblock %}
+
+
+{% block content %} {# Define the main content block #}
+    <h1 class="main-title">
+        <i class="fas fa-compass"></i> Career & Degree Advisor
+    </h1>
+
+    <!-- Job Role Prediction Section -->
+    <section class="form-section">
+        <h2 class="section-title"><i class="fas fa-briefcase"></i> Job Role Prediction</h2>
+        <p class="section-description">Select your proficiency level for each skill to get a suggested job role.</p>
+        {% if job_prediction_result %}
+        <div class="alert {% if 'Error' in job_prediction_result %}alert-danger{% else %}alert-success{% endif %} prediction-card" role="alert">
+            <i class="fas {% if 'Error' in job_prediction_result %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} fa-fw"></i>
+            <strong>Suggestion:</strong> {{ job_prediction_result }}
+        </div>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3 feature-group">
+                {% for feature in job_features %}
+                <div class="col-md-6">
+                    <label for="job_{{ feature|slugify }}" class="form-label">{{ feature|title }}</label>
+                    <select class="form-select" id="job_{{ feature|slugify }}" name="{{ feature }}" required>
+                        <option value="" disabled {% if not posted_job_data or not posted_job_data|get:feature %}selected{% endif %}>-- Select Level --</option>
+                        {% for category in ordinal_categories_job %}
+                            <option value="{{ category }}" {% if posted_job_data|get:feature == category %}selected{% endif %}>{{ category|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mt-4">
+                <button type="submit" name="predict_job" value="predict_job" class="btn btn-custom btn-predict-job"><i class="fas fa-magic"></i> Predict Job Role</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- Degree Prediction Section -->
+    <section class="form-section">
+        <h2 class="section-title"><i class="fas fa-graduation-cap"></i> Degree Program Suggestion</h2>
+        <p class="section-description">Select the interests that apply to you to receive a potential degree program suggestion.</p>
+        {% if degree_prediction_result %}
+        <div class="alert {% if 'Error' in degree_prediction_result %}alert-danger{% else %}alert-success{% endif %} prediction-card" role="alert">
+            <i class="fas {% if 'Error' in degree_prediction_result %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} fa-fw"></i>
+            <strong>Suggestion:</strong> {{ degree_prediction_result }}
+        </div>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <p class="interest-title"><i class="fas fa-star"></i> Your Interests:</p>
+            <div class="interest-grid">
+                {% for feature in degree_features %}
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="1" id="degree_{{ feature|slugify }}" name="{{ feature }}" {% if posted_degree_data|get:feature == 1 %}checked{% endif %}>
+                    <label class="form-check-label" for="degree_{{ feature|slugify }}">{{ feature|title }}</label>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mt-4">
+                <button type="submit" name="predict_degree" value="predict_degree" class="btn btn-custom btn-predict-degree"><i class="fas fa-lightbulb"></i> Predict Degree</button>
+            </div>
+        </form>
+    </section>
+{% endblock %} {# End the main content block #}

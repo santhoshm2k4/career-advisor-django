@@ -1,0 +1,222 @@
+{# predictor/templates/predictor/predict_degree.html #}
+{% extends "predictor/base.html" %}
+{% load static %}
+{% load predictor_extras %}
+
+{% block title %}Degree Suggestion{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Keep existing styles for form-section, prediction-card, etc. */
+    .form-section {
+        background-color: #ffffff;
+        padding: 30px 35px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 40px;
+        border: 1px solid #e9ecef;
+    }
+
+    .section-description {
+        color: #6c757d;
+        margin-bottom: 25px;
+        font-size: 0.95rem;
+    }
+
+    .interest-title {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 1.5rem;
+    }
+
+    .interest-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.8rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .interest-card {
+        padding: 12px 18px;
+        border: 1px solid #dce0e4;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        text-align: center;
+        font-weight: 500;
+        color: #495057;
+        user-select: none;
+    }
+
+    .interest-card:hover {
+        border-color: #adb5bd;
+        background-color: #e9ecef;
+    }
+
+    .interest-card.selected {
+        background-color: #cfe2ff;
+        border-color: #0d6efd;
+        color: #0a58ca;
+        font-weight: 600;
+    }
+
+    /* Keep checkbox visually hidden */
+    .interest-checkbox {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+        width: 0;
+        height: 0;
+    }
+
+    .btn-custom {
+        padding: 0.7rem 1.8rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-custom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-predict-degree {
+        background-color: #198754;
+        border-color: #198754;
+        color: #fff;
+    }
+
+    .btn-predict-degree:hover {
+        background-color: #157347;
+        border-color: #146c43;
+        color: #fff;
+    }
+
+    .prediction-card {
+        margin-top: 25px;
+        padding: 18px 25px;
+        border-left-width: 6px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        font-size: 1.05rem;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .prediction-card strong {
+        margin-left: 15px;
+        font-weight: 600;
+    }
+
+    .prediction-card i {
+        font-size: 1.6em;
+        opacity: 0.8;
+    }
+
+    .alert-success {
+        border-left-color: #198754;
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .alert-success i {
+        color: #198754;
+    }
+
+    .alert-danger {
+        border-left-color: #dc3545;
+        background-color: #f8d7da;
+        color: #842029;
+    }
+
+    .alert-danger i {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<h1 class="main-title"><i class="fas fa-graduation-cap"></i> Degree Program Suggestion</h1>
+{# --- Display Result OR Form --- #}
+{% if degree_prediction_result %}
+{# --- Show Result Area (No change needed here) --- #}
+<div class="text-center">
+    <div class="alert {% if 'Error' in degree_prediction_result %}alert-danger{% else %}alert-success{% endif %} prediction-card d-inline-block"
+        role="alert" style="min-width: 300px;">
+        <i
+            class="fas {% if 'Error' in degree_prediction_result %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} fa-fw"></i>
+        <strong>Suggestion:</strong> {{ degree_prediction_result }}
+    </div>
+    <div class="mt-4">
+        <a href="{% url 'predictor:predict_degree' %}" class="btn btn-secondary btn-custom">
+            <i class="fas fa-redo"></i> Predict Again
+        </a>
+    </div>
+</div>
+{% else %}
+{# --- Show Form Area (MODIFIED) --- #}
+<section class="form-section">
+    <p class="section-description text-center">Select the interests that apply to you.</p>
+    <form method="post" id="degree-form">
+        {% csrf_token %}
+        <p class="interest-title text-center"><i class="fas fa-star"></i> Click on Your Interests:</p>
+        {# Display Non-Field Errors (if any) #}
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">
+            {% for error in form.non_field_errors %} {{ error }} {% endfor %}
+        </div>
+        {% endif %}
+        <div class="interest-grid">
+            {# Loop through form fields (BooleanFields) #}
+            {% for field in form %}
+            {# Use the label as the clickable card #}
+            <label class="interest-card {% if field.value %}selected{% endif %}" for="{{ field.id_for_label }}">
+                {{ field.label }} {# Display the interest name from the form field label #}
+                {{ field }} {# Render the actual checkbox input (hidden by CSS) #}
+            </label>
+            {# Display field errors (less likely for checkboxes unless custom validation) #}
+            {% if field.errors %}
+            <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+            {% endif %}
+            {% endfor %}
+        </div>{# End interest-grid #}
+        <div class="text-center mt-4">
+            <button type="submit" name="predict_degree" value="predict_degree"
+                class="btn btn-custom btn-predict-degree"><i class="fas fa-lightbulb"></i> Predict Degree</button>
+        </div>
+    </form>
+</section>
+{% endif %} {# End conditional display #}
+{% endblock %}
+{# Keep the JavaScript for toggling card style #}
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const interestCards = document.querySelectorAll('.interest-card');
+        interestCards.forEach(card => {
+            const checkbox = card.querySelector('.interest-checkbox'); // Ensure checkbox has this class in the form widget attrs
+            card.addEventListener('click', function () {
+                // Let the browser handle checking the input via label click
+                // Then update visual state AFTER the click event finishes
+                setTimeout(() => {
+                    if (checkbox) {
+                        card.classList.toggle('selected', checkbox.checked);
+                    }
+                }, 0);
+            });
+            // Set initial state on page load
+            if (checkbox && checkbox.checked) {
+                card.classList.add('selected');
+            }
+        });
+    });
+</script>
+{% endblock %}
